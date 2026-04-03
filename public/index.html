@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TM Evaluator Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FAFAF7;--bg2:#F0EFEB;--bg3:#E8E7E2;
+  --text:#1A1A18;--text2:#5C5B57;--text3:#8A8983;
+  --accent:#1B6B4A;--accent-light:#E8F5EE;--accent-mid:#2D9E6E;
+  --warm:#C4622D;--warm-light:#FDF0E8;
+  --coral:#D85A30;--coral-light:#FAECE7;
+  --purple:#534AB7;--purple-light:#EEEDFE;
+  --border:#D8D7D2;--border-light:#ECEAE5;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-display:'Fraunces','Georgia',serif;
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-body);color:var(--text);background:var(--bg);
+  min-height:100dvh;line-height:1.5;overflow-x:hidden;
+}
+.app{max-width:480px;margin:0 auto;padding:0 16px 100px}
+
+.header{
+  text-align:center;padding:40px 0 24px;
+  border-bottom:1px solid var(--border-light);margin-bottom:24px;
+}
+.header h1{font-family:var(--font-display);font-weight:600;font-size:1.5rem;letter-spacing:-0.02em;color:var(--text);margin-bottom:4px}
+.header p{font-size:0.8rem;color:var(--text3);font-weight:400}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;
+  background:var(--accent-light);color:var(--accent);
+  padding:3px 10px;border-radius:20px;margin-bottom:10px;
+}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent-mid)}
+
+.setup{
+  background:#fff;border:1px solid var(--border-light);
+  border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;
+}
+.setup summary{
+  font-weight:500;font-size:0.85rem;cursor:pointer;
+  color:var(--text2);list-style:none;display:flex;align-items:center;gap:8px;
+}
+.setup summary::before{content:"\2699";font-size:0.9rem}
+.setup summary::after{content:"\203A";margin-left:auto;transition:transform 0.2s;font-size:1.1rem;color:var(--text3)}
+.setup[open] summary::after{transform:rotate(90deg)}
+.setup-inner{padding-top:16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:0.75rem;font-weight:500;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em}
+.field input,.field textarea,.field select{
+  width:100%;padding:10px 12px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-family:var(--font-body);font-size:0.85rem;
+  background:var(--bg);color:var(--text);transition:border-color 0.2s;
+  appearance:none;-webkit-appearance:none;
+}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238A8983' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer;
+}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:60px}
+.field .hint{font-size:0.7rem;color:var(--text3);margin-top:4px}
+
+.project-info{
+  background:var(--purple-light);border:1px solid #CECBF6;
+  border-radius:var(--radius-sm);padding:12px 14px;margin-top:8px;
+  display:none;
+}
+.project-info.visible{display:block}
+.project-info-title{font-size:0.8rem;font-weight:600;color:var(--purple);margin-bottom:6px}
+.project-info-obj{font-size:0.75rem;color:#3C3489;line-height:1.55}
+.project-info-obj li{margin-bottom:3px;list-style:none;padding-left:14px;position:relative}
+.project-info-obj li::before{content:"\2192";position:absolute;left:0;color:var(--purple);font-size:0.7rem}
+.project-info-time{font-size:0.7rem;color:var(--purple);margin-top:8px;font-weight:500}
+
+.pathway-group{
+  background:#fff;border:1px solid var(--border-light);
+  border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;
+}
+.pathway-group-title{font-size:0.85rem;font-weight:500;color:var(--text);margin-bottom:4px}
+.pathway-group-hint{font-size:0.75rem;color:var(--text3);margin-bottom:14px}
+
+.state{display:none}
+.state.active{display:block}
+
+.idle-card{
+  background:#fff;border:1px solid var(--border-light);
+  border-radius:var(--radius-lg);padding:32px 24px;text-align:center;
+  margin-bottom:16px;
+}
+.idle-card h2{font-family:var(--font-display);font-size:1.15rem;font-weight:600;margin-bottom:6px}
+.idle-card p{font-size:0.82rem;color:var(--text2);line-height:1.6;margin-bottom:24px}
+
+.btn-listen{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:14px 24px;border:none;border-radius:var(--radius);
+  background:var(--accent);color:#fff;font-family:var(--font-body);
+  font-size:0.95rem;font-weight:500;cursor:pointer;transition:all 0.2s;
+}
+.btn-listen:hover{background:#15573C}
+.btn-listen:active{transform:scale(0.98)}
+.btn-listen .mic{width:20px;height:20px;opacity:0.9}
+
+.listening-card{
+  background:#fff;border:1px solid var(--border-light);
+  border-radius:var(--radius-lg);padding:24px;margin-bottom:16px;
+}
+.listening-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.pulse-badge{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.75rem;font-weight:600;color:var(--coral);
+  text-transform:uppercase;letter-spacing:0.06em;
+}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--coral);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+.timer{font-family:var(--font-body);font-size:0.85rem;color:var(--text3);font-variant-numeric:tabular-nums}
+
+.listening-context{
+  font-size:0.75rem;color:var(--purple);background:var(--purple-light);
+  padding:6px 10px;border-radius:6px;margin-bottom:12px;font-weight:500;
+  display:none;
+}
+.listening-context.visible{display:block}
+
+.transcript-area{
+  background:var(--bg);border-radius:var(--radius-sm);
+  padding:14px;min-height:120px;max-height:240px;overflow-y:auto;
+  font-size:0.82rem;line-height:1.65;color:var(--text2);
+  border:1px solid var(--border-light);
+}
+.transcript-area .placeholder{color:var(--text3);font-style:italic}
+.transcript-area .interim{color:var(--text3)}
+
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn-stop{
+  flex:1;padding:12px;border:none;border-radius:var(--radius);
+  background:var(--coral);color:#fff;font-family:var(--font-body);
+  font-size:0.88rem;font-weight:500;cursor:pointer;transition:all 0.2s;
+}
+.btn-stop:hover{background:#B84A26}
+.btn-pause{
+  padding:12px 18px;border:1px solid var(--border);border-radius:var(--radius);
+  background:#fff;color:var(--text2);font-family:var(--font-body);
+  font-size:0.88rem;font-weight:500;cursor:pointer;transition:all 0.2s;
+}
+.btn-pause:hover{background:var(--bg2)}
+
+.analyzing-card{
+  background:#fff;border:1px solid var(--border-light);
+  border-radius:var(--radius-lg);padding:40px 24px;text-align:center;
+}
+.spinner{
+  width:40px;height:40px;border:3px solid var(--bg3);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 0.8s linear infinite;margin:0 auto 16px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.analyzing-card h3{font-family:var(--font-display);font-size:1.05rem;margin-bottom:6px}
+.analyzing-card p{font-size:0.8rem;color:var(--text3)}
+
+.results-card{
+  background:#fff;border:1px solid var(--border-light);
+  border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;
+}
+.results-header{padding:20px 24px 16px;border-bottom:1px solid var(--border-light)}
+.results-header h2{font-family:var(--font-display);font-size:1.1rem;font-weight:600;margin-bottom:2px}
+.results-header p{font-size:0.75rem;color:var(--text3)}
+.results-body{padding:0}
+
+.eval-section{padding:20px 24px;border-bottom:1px solid var(--border-light)}
+.eval-section:last-child{border-bottom:none}
+.eval-section-label{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;
+  padding:3px 10px;border-radius:16px;margin-bottom:12px;
+}
+.eval-section-label.commend{background:var(--accent-light);color:var(--accent)}
+.eval-section-label.recommend{background:var(--warm-light);color:var(--warm)}
+.eval-section-label.closing{background:var(--purple-light);color:var(--purple)}
+.eval-section-label.project{background:#E6F1FB;color:#0C447C}
+
+.eval-point{
+  font-size:0.84rem;line-height:1.65;color:var(--text);
+  margin-bottom:10px;padding-left:14px;
+  border-left:2px solid var(--border-light);
+}
+.eval-point:last-child{margin-bottom:0}
+
+.overall-notes{
+  padding:20px 24px;background:var(--bg);
+  font-size:0.82rem;line-height:1.65;color:var(--text2);
+}
+.overall-notes strong{font-weight:500;color:var(--text)}
+
+.btn-new{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px;border:1px solid var(--border);border-radius:var(--radius);
+  background:#fff;color:var(--text);font-family:var(--font-body);
+  font-size:0.88rem;font-weight:500;cursor:pointer;transition:all 0.2s;
+}
+.btn-new:hover{background:var(--bg2)}
+
+.error-msg{
+  background:var(--coral-light);border:1px solid #F0997B;
+  border-radius:var(--radius-sm);padding:12px 14px;
+  font-size:0.8rem;color:var(--coral);margin-bottom:16px;
+}
+
+.info-bar{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.7rem;color:var(--text3);
+  padding:8px 12px;background:var(--bg2);
+  border-radius:var(--radius-sm);margin-bottom:16px;
+}
+.info-bar svg{width:14px;height:14px;opacity:0.5;flex-shrink:0}
+
+.filler-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.filler-chip{
+  font-size:0.7rem;padding:2px 8px;border-radius:12px;
+  background:var(--warm-light);color:var(--warm);font-weight:500;
+}
+
+@media(max-width:480px){
+  .app{padding:0 12px 100px}
+  .header{padding:28px 0 20px}
+  .header h1{font-size:1.3rem}
+}
+
+.fade-in{animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="badge">Secure</div>
+    <h1>TM Evaluator Assistant</h1>
+    <p>A quiet companion for sharper evaluations</p>
+  </div>
+
+  <!-- PATHWAY SELECTOR -->
+  <div class="pathway-group">
+    <div class="pathway-group-title">Speech project</div>
+    <div class="pathway-group-hint">Select the pathway and project so the AI evaluates against the right objectives</div>
+    <div class="field">
+      <label>Pathway</label>
+      <select id="pathwaySelect" onchange="onPathwayChange()">
+        <option value="">General evaluation (no specific pathway)</option>
+      </select>
+    </div>
+    <div class="field" id="levelField" style="display:none">
+      <label>Level</label>
+      <select id="levelSelect" onchange="onLevelChange()">
+        <option value="">Select level...</option>
+      </select>
+    </div>
+    <div class="field" id="projectField" style="display:none">
+      <label>Project</label>
+      <select id="projectSelect" onchange="onProjectChange()">
+        <option value="">Select project...</option>
+      </select>
+    </div>
+    <div class="project-info" id="projectInfo">
+      <div class="project-info-title" id="projectInfoTitle"></div>
+      <ul class="project-info-obj" id="projectInfoObj"></ul>
+      <div class="project-info-time" id="projectInfoTime"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <details class="setup" id="setupPanel">
+    <summary>Settings</summary>
+    <div class="setup-inner">
+      <div class="field">
+        <label>Speaker name (optional)</label>
+        <input type="text" id="speakerName" placeholder="e.g. Sarah">
+      </div>
+      <div class="field">
+        <label>Notes for the evaluator (optional)</label>
+        <textarea id="evalNotes" placeholder="e.g. Focus on vocal variety, this is their 3rd speech"></textarea>
+      </div>
+    </div>
+  </details>
+
+  <div class="info-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    <span>Nothing is recorded. Audio is transcribed live and discarded. No API keys are stored in your browser.</span>
+  </div>
+
+  <!-- IDLE STATE -->
+  <div class="state active" id="stateIdle">
+    <div class="idle-card">
+      <h2>Ready to listen</h2>
+      <p>Select the speech project above (optional), then start when the speaker begins.</p>
+      <button class="btn-listen" onclick="startListening()">
+        <svg class="mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="1" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Start listening
+      </button>
+    </div>
+  </div>
+
+  <!-- LISTENING STATE -->
+  <div class="state" id="stateListening">
+    <div class="listening-card">
+      <div class="listening-header">
+        <div class="pulse-badge"><div class="pulse-dot"></div> Listening</div>
+        <div class="timer" id="timer">0:00</div>
+      </div>
+      <div class="listening-context" id="listeningContext"></div>
+      <div class="transcript-area" id="transcriptArea">
+        <span class="placeholder">Waiting for speech...</span>
+      </div>
+      <div class="filler-bar" id="fillerBar"></div>
+      <div class="btn-row">
+        <button class="btn-pause" id="btnPause" onclick="togglePause()">Pause</button>
+        <button class="btn-stop" onclick="stopListening()">Done \u2014 Analyze</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYZING STATE -->
+  <div class="state" id="stateAnalyzing">
+    <div class="analyzing-card fade-in">
+      <div class="spinner"></div>
+      <h3>Preparing your talking points</h3>
+      <p id="analyzingMsg">Applying Toastmaster evaluation criteria...</p>
+    </div>
+  </div>
+
+  <!-- RESULTS STATE -->
+  <div class="state" id="stateResults">
+    <div id="resultsContent"></div>
+    <button class="btn-new" onclick="resetApp()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 105.42-12.42L1 10"/></svg>
+      New evaluation
+    </button>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div class="state" id="stateError">
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="btn-new" onclick="resetApp()">Try again</button>
+  </div>
+</div>
+
+<script>
+// =====================================================
+// PATHWAYS KNOWLEDGE BASE
+// =====================================================
+const PATHWAYS = {
+  "Dynamic Leadership": {
+    levels: {
+      "Level 1 - Mastering Fundamentals": {
+        projects: {
+          "Ice Breaker": {
+            objectives: ["Write and deliver a speech about any topic to introduce yourself to the club","Begin to discover your speaking style and strengths","Share some personal story or experience with the audience"],
+            time: "4-6 minutes",
+            focus: "Self-introduction, personal storytelling, basic speech structure. This is often the speaker's first speech \u2014 prioritize encouragement."
+          },
+          "Evaluation and Feedback": {
+            objectives: ["Present a speech on any topic","Receive an evaluation from a fellow club member","Complete an evaluation of another member's speech"],
+            time: "5-7 minutes",
+            focus: "Any topic. The speaker is learning about giving and receiving feedback."
+          },
+          "Researching and Presenting": {
+            objectives: ["Research a topic and present findings","Outline or organize the speech clearly","Use credible sources and cite them"],
+            time: "5-7 minutes",
+            focus: "Research quality, source credibility, organized presentation of facts."
+          }
+        }
+      },
+      "Level 2 - Learning Your Style": {
+        projects: {
+          "Understanding Your Leadership Style": {
+            objectives: ["Identify your leadership style","Present a speech about your leadership style and its impact","Share a personal experience of leading"],
+            time: "5-7 minutes",
+            focus: "Self-awareness of leadership approach, authenticity, personal reflection."
+          },
+          "Connect with Your Audience": {
+            objectives: ["Identify techniques to connect with an audience","Incorporate audience connection techniques into a speech","Create a strong opening and closing"],
+            time: "5-7 minutes",
+            focus: "Audience engagement techniques, opening hooks, strong closings, eye contact, rhetorical questions."
+          },
+          "Introduction to Toastmasters Mentoring": {
+            objectives: ["Clearly explain Toastmasters mentoring","Present a speech about a time you were mentored or mentored someone","Reflect on the value of the mentoring relationship"],
+            time: "5-7 minutes",
+            focus: "Mentoring experiences, relationship building, gratitude and growth."
+          }
+        }
+      },
+      "Level 3 - Increasing Knowledge": {
+        projects: {
+          "Persuasive Speaking": {
+            objectives: ["Present a persuasive speech on any topic","Use logic, evidence, and emotional appeals","Organize the speech with a clear call to action"],
+            time: "5-7 minutes",
+            focus: "Persuasion techniques, logical structure, emotional appeal, clear call to action, evidence quality."
+          },
+          "Understanding Conflict Resolution": {
+            objectives: ["Identify strategies for managing conflict","Apply conflict resolution techniques","Present a speech about conflict resolution"],
+            time: "5-7 minutes",
+            focus: "Conflict resolution strategies, empathy, problem-solving, real-world application."
+          }
+        }
+      },
+      "Level 4 - Building Skills": {
+        projects: {
+          "Managing a Difficult Audience": {
+            objectives: ["Identify techniques for managing a difficult audience","Practice techniques in a speech","Demonstrate ability to adapt to audience reactions"],
+            time: "12-15 minutes",
+            focus: "Audience management, adaptability, composure under pressure, engagement recovery."
+          },
+          "Create a Podcast": {
+            objectives: ["Research and plan podcast content","Record a podcast episode","Present the podcast concept to the club"],
+            time: "2-3 minutes (intro) + podcast",
+            focus: "Content planning, audio storytelling, clarity of concept."
+          }
+        }
+      },
+      "Level 5 - Demonstrating Expertise": {
+        projects: {
+          "Leading in Your Volunteer Organization": {
+            objectives: ["Apply leadership skills in a volunteer setting","Deliver a speech about your volunteer leadership experience","Reflect on leadership growth"],
+            time: "5-7 minutes",
+            focus: "Leadership reflection, community impact, growth narrative."
+          },
+          "High Performance Leadership": {
+            objectives: ["Lead a project to completion","Deliver a speech about the project leadership experience","Demonstrate measurable results"],
+            time: "5-7 minutes",
+            focus: "Project leadership, results demonstration, team coordination, lessons learned."
+          }
+        }
+      }
+    }
+  },
+  "Presentation Mastery": {
+    levels: {
+      "Level 1 - Mastering Fundamentals": {
+        projects: {
+          "Ice Breaker": {
+            objectives: ["Write and deliver a speech about any topic to introduce yourself","Begin to discover your speaking style","Share something personal with the audience"],
+            time: "4-6 minutes",
+            focus: "Self-introduction, comfort on stage, basic speech structure."
+          },
+          "Evaluation and Feedback": {
+            objectives: ["Present a speech on any topic","Receive and apply evaluation feedback"],
+            time: "5-7 minutes",
+            focus: "Openness to feedback, any topic."
+          },
+          "Researching and Presenting": {
+            objectives: ["Research a topic and present findings clearly","Organize information logically","Cite credible sources"],
+            time: "5-7 minutes",
+            focus: "Research quality, logical organization, source citation."
+          }
+        }
+      },
+      "Level 2 - Learning Your Style": {
+        projects: {
+          "Understanding Your Communication Style": {
+            objectives: ["Identify your communication style","Present a speech about your style and how it impacts your interactions","Demonstrate awareness of strengths and areas for growth"],
+            time: "5-7 minutes",
+            focus: "Self-awareness, communication style reflection, authenticity."
+          },
+          "Connect with Your Audience": {
+            objectives: ["Use techniques to connect with the audience","Create an engaging opening and memorable closing","Maintain audience attention throughout"],
+            time: "5-7 minutes",
+            focus: "Audience engagement, opening hooks, closings, sustained attention."
+          }
+        }
+      },
+      "Level 3 - Increasing Knowledge": {
+        projects: {
+          "Persuasive Speaking": {
+            objectives: ["Craft and deliver a persuasive speech","Incorporate evidence and emotional appeals","Include a clear call to action"],
+            time: "5-7 minutes",
+            focus: "Persuasion, evidence, emotional appeal, call to action."
+          },
+          "Using Presentation Software": {
+            objectives: ["Develop a speech supported by visual aids or slides","Ensure visuals enhance rather than distract","Integrate visuals seamlessly into delivery"],
+            time: "5-7 minutes",
+            focus: "Visual aid integration, slide design sense, seamless delivery with slides."
+          }
+        }
+      },
+      "Level 4 - Building Skills": {
+        projects: {
+          "Building an Online Presence": {
+            objectives: ["Develop strategies for online presence","Present findings about personal branding","Demonstrate understanding of digital communication"],
+            time: "5-7 minutes",
+            focus: "Digital communication, personal branding, online strategy."
+          },
+          "Managing a Difficult Audience": {
+            objectives: ["Demonstrate techniques for managing difficult audiences","Adapt presentation style to audience needs","Maintain composure and engagement"],
+            time: "12-15 minutes",
+            focus: "Audience management, adaptability, composure."
+          }
+        }
+      },
+      "Level 5 - Demonstrating Expertise": {
+        projects: {
+          "Deliver Social Speeches": {
+            objectives: ["Deliver a social speech (toast, eulogy, or tribute)","Use appropriate tone and emotional connection","Demonstrate awareness of occasion and audience"],
+            time: "3-5 minutes",
+            focus: "Emotional tone, occasion awareness, heartfelt delivery."
+          },
+          "High Performance Leadership": {
+            objectives: ["Lead a significant project","Present results and leadership lessons","Demonstrate growth as a speaker and leader"],
+            time: "5-7 minutes",
+            focus: "Leadership, measurable results, growth reflection."
+          }
+        }
+      }
+    }
+  },
+  "Effective Coaching": {
+    levels: {
+      "Level 1 - Mastering Fundamentals": {
+        projects: {
+          "Ice Breaker": {
+            objectives: ["Introduce yourself to the club","Discover your speaking style","Share a personal story or experience"],
+            time: "4-6 minutes",
+            focus: "Self-introduction, personal storytelling, finding comfort on stage."
+          },
+          "Evaluation and Feedback": {
+            objectives: ["Present a speech on any topic","Receive and learn from evaluation"],
+            time: "5-7 minutes",
+            focus: "Any topic, learning from feedback."
+          }
+        }
+      },
+      "Level 2 - Learning Your Style": {
+        projects: {
+          "Understanding Your Communication Style": {
+            objectives: ["Identify your communication style and preferences","Present a speech reflecting on your communication approach","Connect style awareness to coaching ability"],
+            time: "5-7 minutes",
+            focus: "Self-awareness, communication reflection, coaching mindset."
+          },
+          "Active Listening": {
+            objectives: ["Demonstrate active listening skills","Present a speech about the importance of listening in coaching","Show empathy and understanding in communication"],
+            time: "5-7 minutes",
+            focus: "Listening skills, empathy, coaching-oriented communication."
+          }
+        }
+      },
+      "Level 3 - Increasing Knowledge": {
+        projects: {
+          "Reaching Consensus": {
+            objectives: ["Facilitate a group discussion to reach consensus","Demonstrate facilitation and coaching techniques","Present on the experience and outcomes"],
+            time: "20-25 minutes (facilitation) + 5-7 minutes (speech)",
+            focus: "Facilitation skills, consensus building, coaching in group settings."
+          },
+          "Successful Collaboration": {
+            objectives: ["Lead a collaborative effort","Present lessons on effective collaboration","Demonstrate coaching in team settings"],
+            time: "5-7 minutes",
+            focus: "Team collaboration, coaching leadership, partnership skills."
+          }
+        }
+      }
+    }
+  },
+  "Innovative Planning": {
+    levels: {
+      "Level 1 - Mastering Fundamentals": {
+        projects: {
+          "Ice Breaker": {
+            objectives: ["Introduce yourself to the club","Share a personal story to connect with the audience","Begin discovering your speaking strengths"],
+            time: "4-6 minutes",
+            focus: "Self-introduction, personal storytelling, first speech encouragement."
+          },
+          "Evaluation and Feedback": {
+            objectives: ["Present a speech on any topic","Practice receiving constructive evaluation"],
+            time: "5-7 minutes",
+            focus: "Any topic, feedback reception."
+          }
+        }
+      },
+      "Level 2 - Learning Your Style": {
+        projects: {
+          "Understanding Your Communication Style": {
+            objectives: ["Identify and reflect on your communication style","Present insights about how your style affects your planning and innovation","Connect communication awareness to innovative thinking"],
+            time: "5-7 minutes",
+            focus: "Communication self-awareness, innovation mindset."
+          },
+          "Connect with Your Audience": {
+            objectives: ["Engage the audience with creative techniques","Build rapport through storytelling or interaction","Create a memorable opening and closing"],
+            time: "5-7 minutes",
+            focus: "Creative engagement, audience rapport, memorable framing."
+          }
+        }
+      },
+      "Level 3 - Increasing Knowledge": {
+        projects: {
+          "Project Management": {
+            objectives: ["Apply project management techniques to a real project","Present the project plan, execution, and outcomes","Demonstrate organized thinking and planning skills"],
+            time: "5-7 minutes",
+            focus: "Project planning, organized presentation, results communication."
+          },
+          "Persuasive Speaking": {
+            objectives: ["Deliver a persuasive speech with clear logic and evidence","Include emotional appeal and a call to action","Connect persuasion to innovative ideas"],
+            time: "5-7 minutes",
+            focus: "Persuasion, innovation framing, evidence-based advocacy."
+          }
+        }
+      }
+    }
+  },
+  "Motivational Strategies": {
+    levels: {
+      "Level 1 - Mastering Fundamentals": {
+        projects: {
+          "Ice Breaker": {
+            objectives: ["Introduce yourself and share what motivates you","Begin discovering your speaking style","Connect with the audience through personal experience"],
+            time: "4-6 minutes",
+            focus: "Self-introduction, motivation theme, personal connection."
+          },
+          "Evaluation and Feedback": {
+            objectives: ["Present a speech on any topic","Learn from evaluation feedback"],
+            time: "5-7 minutes",
+            focus: "Any topic, growth through feedback."
+          }
+        }
+      },
+      "Level 2 - Learning Your Style": {
+        projects: {
+          "Understanding Your Leadership Style": {
+            objectives: ["Reflect on how you motivate and lead others","Present your leadership style with examples","Connect leadership style to motivational impact"],
+            time: "5-7 minutes",
+            focus: "Leadership self-awareness, motivational techniques, authentic examples."
+          },
+          "Active Listening": {
+            objectives: ["Demonstrate active listening as a motivational tool","Present on how listening inspires and motivates others","Show empathy in communication"],
+            time: "5-7 minutes",
+            focus: "Listening as motivation, empathy, supportive communication."
+          }
+        }
+      }
+    }
+  }
+};
+
+// =====================================================
+// PATHWAY UI LOGIC
+// =====================================================
+function populatePathways() {
+  const sel = document.getElementById('pathwaySelect');
+  Object.keys(PATHWAYS).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name; sel.appendChild(opt);
+  });
+}
+
+function onPathwayChange() {
+  const pathway = document.getElementById('pathwaySelect').value;
+  const levelField = document.getElementById('levelField');
+  const projectField = document.getElementById('projectField');
+  const levelSel = document.getElementById('levelSelect');
+  const projectSel = document.getElementById('projectSelect');
+  levelSel.innerHTML = '<option value="">Select level...</option>';
+  projectSel.innerHTML = '<option value="">Select project...</option>';
+  projectField.style.display = 'none'; hideProjectInfo();
+  if (!pathway) { levelField.style.display = 'none'; return; }
+  Object.keys(PATHWAYS[pathway].levels).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name; levelSel.appendChild(opt);
+  });
+  levelField.style.display = 'block';
+}
+
+function onLevelChange() {
+  const pathway = document.getElementById('pathwaySelect').value;
+  const level = document.getElementById('levelSelect').value;
+  const projectField = document.getElementById('projectField');
+  const projectSel = document.getElementById('projectSelect');
+  projectSel.innerHTML = '<option value="">Select project...</option>';
+  hideProjectInfo();
+  if (!level) { projectField.style.display = 'none'; return; }
+  Object.keys(PATHWAYS[pathway].levels[level].projects).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name; projectSel.appendChild(opt);
+  });
+  projectField.style.display = 'block';
+}
+
+function onProjectChange() {
+  const pathway = document.getElementById('pathwaySelect').value;
+  const level = document.getElementById('levelSelect').value;
+  const project = document.getElementById('projectSelect').value;
+  if (!project) { hideProjectInfo(); return; }
+  const data = PATHWAYS[pathway].levels[level].projects[project];
+  document.getElementById('projectInfoTitle').textContent = project;
+  const objList = document.getElementById('projectInfoObj');
+  objList.innerHTML = '';
+  data.objectives.forEach(o => { const li = document.createElement('li'); li.textContent = o; objList.appendChild(li); });
+  document.getElementById('projectInfoTime').textContent = 'Time: ' + data.time;
+  document.getElementById('projectInfo').classList.add('visible');
+}
+
+function hideProjectInfo() { document.getElementById('projectInfo').classList.remove('visible'); }
+
+function getSelectedProject() {
+  const pathway = document.getElementById('pathwaySelect').value;
+  const level = document.getElementById('levelSelect').value;
+  const project = document.getElementById('projectSelect').value;
+  if (!pathway || !level || !project) return null;
+  return { pathway, level, project, ...PATHWAYS[pathway].levels[level].projects[project] };
+}
+
+// =====================================================
+// CORE APP STATE
+// =====================================================
+let recognition = null, fullTranscript = '', interimText = '';
+let timerInterval = null, seconds = 0, isPaused = false, fillerCounts = {};
+const FILLERS = ['um','uh','ah','er','like','you know','so','basically','actually','right','okay so'];
+
+function show(id) {
+  document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function formatTime(s) { return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+
+function countFillers(text) {
+  const lower = text.toLowerCase();
+  FILLERS.forEach(f => {
+    const regex = new RegExp('\\b' + f.replace(' ','\\s+') + '\\b','gi');
+    const matches = lower.match(regex);
+    if (matches) fillerCounts[f] = (fillerCounts[f]||0) + matches.length;
+  });
+  renderFillers();
+}
+
+function renderFillers() {
+  const bar = document.getElementById('fillerBar');
+  bar.innerHTML = '';
+  Object.entries(fillerCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1])
+    .forEach(([word,count]) => {
+      const chip = document.createElement('span');
+      chip.className = 'filler-chip';
+      chip.textContent = '"'+word+'" \u00d7 '+count;
+      bar.appendChild(chip);
+    });
+}
+
+function updateTranscript() {
+  const area = document.getElementById('transcriptArea');
+  const display = fullTranscript + (interimText ? '<span class="interim"> '+interimText+'</span>' : '');
+  area.innerHTML = display || '<span class="placeholder">Waiting for speech...</span>';
+  area.scrollTop = area.scrollHeight;
+}
+
+// =====================================================
+// SPEECH RECOGNITION
+// =====================================================
+function startListening() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showError('Speech recognition not supported. Use Chrome or Edge.'); return; }
+
+  fullTranscript = ''; interimText = ''; seconds = 0; fillerCounts = {}; isPaused = false;
+  recognition = new SR();
+  recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
+
+  recognition.onresult = (event) => {
+    let interim = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) { fullTranscript += t + ' '; countFillers(t); }
+      else interim += t;
+    }
+    interimText = interim; updateTranscript();
+  };
+  recognition.onerror = (e) => { if (e.error!=='no-speech' && e.error!=='aborted') console.error(e.error); };
+  recognition.onend = () => {
+    if (document.getElementById('stateListening').classList.contains('active') && !isPaused)
+      try { recognition.start(); } catch(e) {}
+  };
+
+  recognition.start();
+  show('stateListening');
+
+  const proj = getSelectedProject();
+  const ctx = document.getElementById('listeningContext');
+  if (proj) { ctx.textContent = 'Evaluating: '+proj.project+' ('+proj.pathway+' \u00b7 '+proj.level+')'; ctx.classList.add('visible'); }
+  else ctx.classList.remove('visible');
+
+  document.getElementById('transcriptArea').innerHTML = '<span class="placeholder">Waiting for speech...</span>';
+  document.getElementById('fillerBar').innerHTML = '';
+  timerInterval = setInterval(() => { if(!isPaused){seconds++;document.getElementById('timer').textContent=formatTime(seconds);} }, 1000);
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  document.getElementById('btnPause').textContent = isPaused ? 'Resume' : 'Pause';
+  if (isPaused) try{recognition.stop();}catch(e){} else try{recognition.start();}catch(e){}
+}
+
+function stopListening() {
+  if (recognition) { recognition.onend=null; try{recognition.stop();}catch(e){} }
+  if (timerInterval) clearInterval(timerInterval);
+  if (fullTranscript.trim().length < 20) {
+    showError('Not enough speech captured. Move closer to the speaker and try again.');
+    return;
+  }
+  analyzeTranscript();
+}
+
+// =====================================================
+// ANALYSIS — CALLS LOCAL PROXY (API KEY ON SERVER)
+// =====================================================
+async function analyzeTranscript() {
+  show('stateAnalyzing');
+
+  const speaker = document.getElementById('speakerName').value.trim();
+  const notes = document.getElementById('evalNotes').value.trim();
+  const proj = getSelectedProject();
+  const duration = formatTime(seconds);
+  const fillerSummary = Object.entries(fillerCounts).filter(([,v])=>v>0).map(([w,c])=>'"'+w+'": '+c+' times').join(', ') || 'None detected';
+
+  if (proj) document.getElementById('analyzingMsg').textContent = 'Evaluating against '+proj.project+' objectives...';
+
+  let projectContext = '';
+  if (proj) {
+    projectContext = '\n\nSPECIFIC PROJECT BEING EVALUATED:\nPathway: '+proj.pathway+'\nLevel: '+proj.level+'\nProject: '+proj.project+'\nTime allowed: '+proj.time+'\n\nPROJECT-SPECIFIC OBJECTIVES the speaker should achieve:\n'+proj.objectives.map((o,i)=>(i+1)+'. '+o).join('\n')+'\n\nEVALUATION FOCUS FOR THIS PROJECT: '+proj.focus+'\n\nCRITICAL: In addition to general TM evaluation criteria, you MUST assess how well the speaker achieved the specific project objectives listed above. Include a "project_objectives" section in your response that evaluates each objective specifically.';
+  }
+
+  const system = 'You are an experienced Toastmasters evaluator assistant. Your role is to help an evaluator prepare talking points they will deliver verbally using the CRC (Commend, Recommend, Commend) framework.\n\nTOASTMASTER EVALUATION CRITERIA you should always assess:\n- STRUCTURE: Clear opening/attention grabber, organized body with transitions, strong conclusion/call to action\n- VOCAL VARIETY: Pace changes, volume modulation, effective pauses, pitch variation, conversational tone vs monotone\n- LANGUAGE: Word choice, rhetorical devices, vivid descriptions, avoidance of jargon, power words\n- FILLER WORDS: Frequency and impact of ums, ahs, likes \u2014 note patterns and suggest awareness techniques\n- BODY LANGUAGE (inferred): Confidence cues from speech patterns, pausing for emphasis suggests stage presence\n- ENGAGEMENT: Audience interaction, storytelling, humor, rhetorical questions, callbacks\n- TIMING: Appropriate pacing for the allotted time\n- PURPOSE: Clear message or takeaway, achieved speech objectives, memorable conclusion'+projectContext+'\n\nRESPONSE FORMAT \u2014 respond ONLY in this exact JSON structure, no other text:\n{\n  '+(proj?'"project_objectives": [\n    {"objective": "The specific objective", "met": true/false, "observation": "What the speaker did or didn\'t do"}\n  ],\n  ':'')+'"commend": [\n    {"point": "Specific thing to praise", "moment": "Brief reference to specific moment", "why": "Why this matters for growth"}\n  ],\n  "recommend": [\n    {"point": "Specific area to improve", "suggestion": "Concrete actionable tip", "example": "How to apply it to this speech"}\n  ],\n  "closing_commend": [\n    {"point": "Encouraging closing observation", "forward": "What to keep doing or build on"}\n  ],\n  "overall_note": "One sentence summary the evaluator can use to frame their evaluation"\n}\n\nGUIDELINES:\n- Give 2-3 commend points, 1-2 recommend points, 1 closing commend\n- Be SPECIFIC \u2014 reference actual moments, phrases, or patterns from the transcript\n- Recommendations should be constructive and actionable, not vague\n- Frame recommendations as "next level" growth, not criticism\n- Keep language warm and encouraging \u2014 this is Toastmasters culture'+(proj?'\n- PRIORITIZE evaluating against the project-specific objectives':'');
+
+  let userContent = 'Here is the speech transcript to evaluate:\n\n---\n'+fullTranscript.trim()+'\n---\n\nSpeech duration: '+duration+'\nFiller words detected: '+fillerSummary;
+  if (speaker) userContent += '\nSpeaker: '+speaker;
+  if (proj) userContent += '\nSpeech project: '+proj.project+' ('+proj.pathway+', '+proj.level+')';
+  if (notes) userContent += '\nEvaluator notes: '+notes;
+
+  try {
+    // Call the LOCAL Netlify function proxy — NOT Anthropic directly
+    const response = await fetch('/api/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: system,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Server error: ' + response.status);
+    }
+
+    const data = await response.json();
+    const text = data.content.map(c => c.text||'').join('');
+    const clean = text.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(clean);
+    renderResults(result, proj);
+  } catch(e) {
+    showError('Analysis failed: ' + e.message);
+  }
+}
+
+// =====================================================
+// RENDER RESULTS
+// =====================================================
+function renderResults(result, proj) {
+  const speaker = document.getElementById('speakerName').value.trim();
+  const duration = formatTime(seconds);
+  let html = '<div class="results-card fade-in"><div class="results-header">';
+  html += '<h2>Evaluation talking points</h2>';
+  html += '<p>'+(speaker?speaker+' \u00b7 ':'')+(proj?proj.project+' \u00b7 ':'')+duration+'</p>';
+  html += '</div><div class="results-body">';
+
+  if (proj && result.project_objectives?.length) {
+    html += '<div class="eval-section"><div class="eval-section-label project">\u2610 Project objectives</div>';
+    result.project_objectives.forEach(o => {
+      const icon = o.met ? '\u2705' : '\u26a0\ufe0f';
+      html += '<div class="eval-point"><strong>'+icon+' '+o.objective+'</strong><br>'+o.observation+'</div>';
+    });
+    html += '</div>';
+  }
+  if (result.commend?.length) {
+    html += '<div class="eval-section"><div class="eval-section-label commend">\u2726 Commend</div>';
+    result.commend.forEach(c => { html += '<div class="eval-point"><strong>'+c.point+'</strong><br>'+c.moment+(c.why?' \u2014 '+c.why:'')+'</div>'; });
+    html += '</div>';
+  }
+  if (result.recommend?.length) {
+    html += '<div class="eval-section"><div class="eval-section-label recommend">\u2197 Recommend</div>';
+    result.recommend.forEach(r => { html += '<div class="eval-point"><strong>'+r.point+'</strong><br>'+r.suggestion+(r.example?'<br><em>'+r.example+'</em>':'')+'</div>'; });
+    html += '</div>';
+  }
+  if (result.closing_commend?.length) {
+    html += '<div class="eval-section"><div class="eval-section-label closing">\u2726 Closing commend</div>';
+    result.closing_commend.forEach(c => { html += '<div class="eval-point"><strong>'+c.point+'</strong>'+(c.forward?'<br>'+c.forward:'')+'</div>'; });
+    html += '</div>';
+  }
+  html += '</div>';
+  if (result.overall_note) html += '<div class="overall-notes"><strong>Framing note:</strong> '+result.overall_note+'</div>';
+  html += '</div>';
+
+  document.getElementById('resultsContent').innerHTML = html;
+  show('stateResults');
+  fullTranscript = ''; interimText = '';
+}
+
+function showError(msg) { document.getElementById('errorMsg').textContent = msg; show('stateError'); }
+
+function resetApp() {
+  fullTranscript='';interimText='';seconds=0;fillerCounts={};
+  if(timerInterval)clearInterval(timerInterval);
+  if(recognition){recognition.onend=null;try{recognition.stop();}catch(e){}}
+  show('stateIdle');
+}
+
+populatePathways();
+</script>
+</body>
+</html>
