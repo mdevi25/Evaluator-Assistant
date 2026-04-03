@@ -24,7 +24,40 @@ body{
   font-family:var(--font-body);color:var(--text);background:var(--bg);
   min-height:100dvh;line-height:1.5;overflow-x:hidden;
 }
-.app{max-width:480px;margin:0 auto;padding:0 16px 100px}
+.app{max-width:480px;margin:0 auto;padding:0 16px 100px;display:none}
+.app.unlocked{display:block}
+
+.gate{
+  max-width:380px;margin:0 auto;padding:0 16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100dvh;text-align:center;
+}
+.gate.hidden{display:none}
+.gate-icon{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--accent-light);display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;
+}
+.gate-icon svg{width:24px;height:24px;color:var(--accent)}
+.gate h1{font-family:var(--font-display);font-weight:600;font-size:1.3rem;letter-spacing:-0.02em;margin-bottom:4px}
+.gate p{font-size:0.82rem;color:var(--text3);margin-bottom:24px;line-height:1.5}
+.gate-input{
+  width:100%;padding:12px 14px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-family:var(--font-body);font-size:0.9rem;
+  background:var(--bg);color:var(--text);text-align:center;
+  letter-spacing:0.1em;transition:border-color 0.2s;margin-bottom:12px;
+}
+.gate-input:focus{outline:none;border-color:var(--accent)}
+.gate-input.shake{animation:shake 0.4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.gate-btn{
+  width:100%;padding:13px;border:none;border-radius:var(--radius);
+  background:var(--accent);color:#fff;font-family:var(--font-body);
+  font-size:0.9rem;font-weight:500;cursor:pointer;transition:all 0.2s;
+}
+.gate-btn:hover{background:#15573C}
+.gate-btn:active{transform:scale(0.98)}
+.gate-error{font-size:0.75rem;color:var(--coral);margin-top:8px;min-height:20px}
 
 .header{
   text-align:center;padding:40px 0 24px;
@@ -238,6 +271,20 @@ body{
 </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div class="gate" id="gate">
+  <div class="gate-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+  </div>
+  <h1>TM Evaluator Assistant</h1>
+  <p>Enter your club access code to continue</p>
+  <input type="password" class="gate-input" id="gateInput" placeholder="Club access code" autocomplete="off" onkeydown="if(event.key==='Enter')checkPassword()">
+  <button class="gate-btn" onclick="checkPassword()">Enter</button>
+  <div class="gate-error" id="gateError"></div>
+</div>
+
+<!-- MAIN APP (hidden until password entered) -->
 <div class="app">
   <div class="header">
     <div class="badge">Secure</div>
@@ -353,43 +400,59 @@ body{
 <script>
 // =====================================================
 // PATHWAYS KNOWLEDGE BASE
+// Source: toastmasters.org/Education/Pathways (April 2026)
+// 6 current paths. Legacy paths (Effective Coaching,
+// Innovative Planning, Leadership Development, Strategic
+// Relationships, Team Collaboration) are NOT included —
+// they are no longer available for new purchases.
+//
+// 2025 Enhancement: Each level now also requires
+// completion of meeting roles + Education Series
+// presentations (Levels 3-5). These are tracked
+// separately and don't affect speech evaluations.
 // =====================================================
 const PATHWAYS = {
   "Dynamic Leadership": {
+    description: "Build skills as a strategic leader. Focus on leadership/communication styles, conflict resolution, and facilitating change.",
     levels: {
       "Level 1 - Mastering Fundamentals": {
         projects: {
           "Ice Breaker": {
-            objectives: ["Write and deliver a speech about any topic to introduce yourself to the club","Begin to discover your speaking style and strengths","Share some personal story or experience with the audience"],
+            objectives: ["Introduce yourself to the club and share your personal story","Begin to discover your speaking style and strengths","Write and deliver a speech about any topic"],
             time: "4-6 minutes",
-            focus: "Self-introduction, personal storytelling, basic speech structure. This is often the speaker's first speech \u2014 prioritize encouragement."
+            focus: "Self-introduction, personal storytelling, basic speech structure. Often the speaker's first speech \u2014 prioritize encouragement."
+          },
+          "Writing a Speech with Purpose": {
+            objectives: ["Write a speech with a clear purpose and message","Organize the speech with a strong opening, body, and conclusion","Demonstrate the ability to connect your topic to the audience"],
+            time: "5-7 minutes",
+            focus: "Speech purpose, clear organization, intentional message, audience connection."
+          },
+          "Introduction to Vocal Variety and Body Language": {
+            objectives: ["Use vocal variety to enhance a speech","Use body language and gestures to support your message","Demonstrate awareness of how delivery impacts the audience"],
+            time: "5-7 minutes",
+            focus: "Vocal variety (pace, pitch, volume, pauses), body language, gestures, eye contact, stage presence."
           },
           "Evaluation and Feedback": {
-            objectives: ["Present a speech on any topic","Receive an evaluation from a fellow club member","Complete an evaluation of another member's speech"],
+            objectives: ["Present a speech on any topic","Receive and apply an evaluation from a fellow member","Complete a verbal evaluation of another member's speech"],
             time: "5-7 minutes",
-            focus: "Any topic. The speaker is learning about giving and receiving feedback."
-          },
-          "Researching and Presenting": {
-            objectives: ["Research a topic and present findings","Outline or organize the speech clearly","Use credible sources and cite them"],
-            time: "5-7 minutes",
-            focus: "Research quality, source credibility, organized presentation of facts."
+            focus: "Any topic. Learning to give and receive constructive feedback."
           }
         }
       },
       "Level 2 - Learning Your Style": {
         projects: {
           "Understanding Your Leadership Style": {
-            objectives: ["Identify your leadership style","Present a speech about your leadership style and its impact","Share a personal experience of leading"],
+            objectives: ["Identify your leadership style","Present a speech about your leadership style and its impact","Share a personal experience of leading others"],
             time: "5-7 minutes",
-            focus: "Self-awareness of leadership approach, authenticity, personal reflection."
+            focus: "Leadership self-awareness, authenticity, personal reflection on leadership experiences."
           },
-          "Connect with Your Audience": {
-            objectives: ["Identify techniques to connect with an audience","Incorporate audience connection techniques into a speech","Create a strong opening and closing"],
+          "Understanding Your Communication Style": {
+            objectives: ["Identify your communication style","Present a speech about how your communication style impacts interactions","Demonstrate awareness of strengths and growth areas"],
             time: "5-7 minutes",
-            focus: "Audience engagement techniques, opening hooks, strong closings, eye contact, rhetorical questions."
+            focus: "Communication self-awareness, interpersonal impact, style reflection."
           },
           "Introduction to Toastmasters Mentoring": {
-            objectives: ["Clearly explain Toastmasters mentoring","Present a speech about a time you were mentored or mentored someone","Reflect on the value of the mentoring relationship"],
+            objectives: ["Understand the value of mentoring in Toastmasters","Present a speech about a mentoring experience","Reflect on how mentoring supports personal growth"],
             time: "5-7 minutes",
             focus: "Mentoring experiences, relationship building, gratitude and growth."
           }
@@ -397,13 +460,248 @@ const PATHWAYS = {
       },
       "Level 3 - Increasing Knowledge": {
         projects: {
-          "Persuasive Speaking": {
-            objectives: ["Present a persuasive speech on any topic","Use logic, evidence, and emotional appeals","Organize the speech with a clear call to action"],
+          "Negotiate the Best Outcome": {
+            objectives: ["Understand negotiation strategies and techniques","Present a speech about a negotiation experience or approach","Demonstrate persuasion and problem-solving skills"],
             time: "5-7 minutes",
-            focus: "Persuasion techniques, logical structure, emotional appeal, clear call to action, evidence quality."
+            focus: "Negotiation skills, persuasion, finding common ground, strategic communication."
+          }
+        }
+      },
+      "Level 4 - Building Skills": {
+        projects: {
+          "Manage Change": {
+            objectives: ["Understand strategies for managing and leading change","Present a speech about a change initiative or experience","Demonstrate ability to communicate change effectively"],
+            time: "5-7 minutes",
+            focus: "Change management, leadership during transitions, strategic communication, resilience."
+          }
+        }
+      },
+      "Level 5 - Demonstrating Expertise": {
+        projects: {
+          "Lead in Any Situation": {
+            objectives: ["Demonstrate leadership skills in a variety of situations","Present a speech about applying leadership in diverse contexts","Show growth as a strategic leader"],
+            time: "5-7 minutes",
+            focus: "Versatile leadership, adaptability, strategic thinking, comprehensive leadership reflection."
           },
+          "Reflect on Your Path": {
+            objectives: ["Reflect on your Pathways journey and growth","Deliver a speech sharing key takeaways and milestones","Inspire others with your development story"],
+            time: "5-7 minutes",
+            focus: "Personal growth narrative, reflection, inspiring others, journey summary."
+          }
+        }
+      }
+    }
+  },
+  "Engaging Humor": {
+    description: "Build skills as a humorous and engaging speaker. Focus on understanding humor and using it effectively in speeches.",
+    levels: {
+      "Level 1 - Mastering Fundamentals": {
+        projects: {
+          "Ice Breaker": {
+            objectives: ["Introduce yourself to the club and share your personal story","Begin to discover your speaking style","Write and deliver a speech about any topic"],
+            time: "4-6 minutes",
+            focus: "Self-introduction, personal storytelling, basic speech structure."
+          },
+          "Writing a Speech with Purpose": {
+            objectives: ["Write a speech with a clear purpose","Organize with a strong opening, body, and conclusion","Connect your topic to the audience"],
+            time: "5-7 minutes",
+            focus: "Speech purpose, organization, clear message."
+          },
+          "Introduction to Vocal Variety and Body Language": {
+            objectives: ["Use vocal variety to enhance a speech","Use body language and gestures to support your message","Demonstrate awareness of delivery impact"],
+            time: "5-7 minutes",
+            focus: "Vocal variety, body language, gestures, eye contact, stage presence."
+          },
+          "Evaluation and Feedback": {
+            objectives: ["Present a speech on any topic","Receive and apply evaluation feedback","Evaluate another member's speech"],
+            time: "5-7 minutes",
+            focus: "Any topic, giving and receiving feedback."
+          }
+        }
+      },
+      "Level 2 - Learning Your Style": {
+        projects: {
+          "Know Your Sense of Humor": {
+            objectives: ["Identify your sense of humor and comedic style","Deliver a speech that incorporates your natural humor","Demonstrate understanding of what makes something funny"],
+            time: "5-7 minutes",
+            focus: "Personal humor style, comedic timing, self-awareness about what's naturally funny to you."
+          },
+          "Connect with Your Audience": {
+            objectives: ["Use techniques to connect with your audience","Create an engaging opening and memorable closing","Maintain audience attention and engagement throughout"],
+            time: "5-7 minutes",
+            focus: "Audience engagement, opening hooks, closings, sustained attention, interaction."
+          },
+          "Introduction to Toastmasters Mentoring": {
+            objectives: ["Understand the value of mentoring","Present a speech about a mentoring experience","Reflect on personal growth from mentoring"],
+            time: "5-7 minutes",
+            focus: "Mentoring, relationships, personal growth."
+          }
+        }
+      },
+      "Level 3 - Increasing Knowledge": {
+        projects: {
+          "Engage Your Audience With Humor": {
+            objectives: ["Use humor techniques to engage the audience","Incorporate humor naturally into a speech on any topic","Demonstrate timing, delivery, and comedic structure"],
+            time: "5-7 minutes",
+            focus: "Humor techniques, comedic timing, audience engagement through laughter, natural humor integration."
+          }
+        }
+      },
+      "Level 4 - Building Skills": {
+        projects: {
+          "The Power of Humor in an Impromptu Speech": {
+            objectives: ["Use humor effectively in an impromptu speaking situation","Demonstrate quick thinking and comedic adaptability","Engage the audience with spontaneous humor"],
+            time: "5-7 minutes",
+            focus: "Impromptu humor, quick thinking, spontaneity, adaptability, thinking on your feet."
+          }
+        }
+      },
+      "Level 5 - Demonstrating Expertise": {
+        projects: {
+          "Deliver Your Message With Humor": {
+            objectives: ["Deliver an extended humorous speech on a meaningful topic","Demonstrate mastery of humor techniques throughout","Balance humor with substance and a clear message"],
+            time: "8-10 minutes",
+            focus: "Extended humorous speech, humor mastery, balancing comedy with substance, sustained audience engagement."
+          },
+          "Reflect on Your Path": {
+            objectives: ["Reflect on your Pathways journey and growth","Share key takeaways and milestones","Inspire others with your development story"],
+            time: "5-7 minutes",
+            focus: "Personal growth, reflection, inspiring others."
+          }
+        }
+      }
+    }
+  },
+  "Motivational Strategies": {
+    description: "Build skills as a powerful communicator. Focus on building connections, understanding motivation, and leading small groups.",
+    levels: {
+      "Level 1 - Mastering Fundamentals": {
+        projects: {
+          "Ice Breaker": {
+            objectives: ["Introduce yourself to the club","Share a personal story or experience","Begin discovering your speaking style"],
+            time: "4-6 minutes",
+            focus: "Self-introduction, personal storytelling, comfort on stage."
+          },
+          "Writing a Speech with Purpose": {
+            objectives: ["Write a speech with a clear purpose","Organize with strong opening, body, and conclusion","Connect your topic to the audience"],
+            time: "5-7 minutes",
+            focus: "Speech purpose, organization, audience connection."
+          },
+          "Introduction to Vocal Variety and Body Language": {
+            objectives: ["Use vocal variety to enhance delivery","Use body language to support your message","Demonstrate awareness of delivery impact"],
+            time: "5-7 minutes",
+            focus: "Vocal variety, body language, gestures, stage presence."
+          },
+          "Evaluation and Feedback": {
+            objectives: ["Present a speech on any topic","Receive and apply evaluation","Evaluate another member's speech"],
+            time: "5-7 minutes",
+            focus: "Any topic, feedback skills."
+          }
+        }
+      },
+      "Level 2 - Learning Your Style": {
+        projects: {
+          "Understanding Your Communication Style": {
+            objectives: ["Identify your communication style","Present how your style impacts interactions","Show awareness of strengths and growth areas"],
+            time: "5-7 minutes",
+            focus: "Communication self-awareness, interpersonal impact."
+          },
+          "Active Listening": {
+            objectives: ["Demonstrate active listening skills","Present a speech about the importance and impact of listening","Show empathy and understanding in communication"],
+            time: "5-7 minutes",
+            focus: "Listening skills, empathy, understanding others, communication depth."
+          },
+          "Introduction to Toastmasters Mentoring": {
+            objectives: ["Understand the value of mentoring","Share a mentoring experience","Reflect on growth from the relationship"],
+            time: "5-7 minutes",
+            focus: "Mentoring, relationship insights, personal growth."
+          }
+        }
+      },
+      "Level 3 - Increasing Knowledge": {
+        projects: {
+          "Understanding Emotional Intelligence": {
+            objectives: ["Demonstrate understanding of emotional intelligence","Present how emotional intelligence impacts communication and leadership","Apply EI concepts to real experiences"],
+            time: "5-7 minutes",
+            focus: "Emotional intelligence, self-awareness, empathy, relationship management, social awareness."
+          }
+        }
+      },
+      "Level 4 - Building Skills": {
+        projects: {
+          "Motivate Others": {
+            objectives: ["Understand and apply motivational strategies","Deliver a speech that inspires or motivates the audience","Demonstrate techniques for influencing and energizing others"],
+            time: "5-7 minutes",
+            focus: "Motivation techniques, inspirational delivery, influence, energizing an audience."
+          }
+        }
+      },
+      "Level 5 - Demonstrating Expertise": {
+        projects: {
+          "Team Building": {
+            objectives: ["Lead a team-building activity or project","Present on team-building strategies and outcomes","Demonstrate leadership in bringing people together"],
+            time: "5-7 minutes",
+            focus: "Team leadership, collaboration, group dynamics, bringing people together."
+          },
+          "Reflect on Your Path": {
+            objectives: ["Reflect on your Pathways journey","Share key takeaways and growth milestones","Inspire others with your story"],
+            time: "5-7 minutes",
+            focus: "Personal growth, reflection, inspiring others."
+          }
+        }
+      }
+    }
+  },
+  "Persuasive Influence": {
+    description: "Build skills as an innovative communicator and leader. Focus on negotiation, interpersonal communication, and creative problem-solving.",
+    levels: {
+      "Level 1 - Mastering Fundamentals": {
+        projects: {
+          "Ice Breaker": {
+            objectives: ["Introduce yourself to the club","Share a personal story or experience","Begin discovering your speaking style"],
+            time: "4-6 minutes",
+            focus: "Self-introduction, personal storytelling, comfort on stage."
+          },
+          "Writing a Speech with Purpose": {
+            objectives: ["Write a speech with a clear purpose","Organize with strong structure","Connect your topic to the audience"],
+            time: "5-7 minutes",
+            focus: "Speech purpose, organization, audience connection."
+          },
+          "Introduction to Vocal Variety and Body Language": {
+            objectives: ["Use vocal variety to enhance delivery","Use body language to support your message","Demonstrate delivery awareness"],
+            time: "5-7 minutes",
+            focus: "Vocal variety, body language, gestures, stage presence."
+          },
+          "Evaluation and Feedback": {
+            objectives: ["Present a speech on any topic","Receive and apply evaluation","Evaluate another member's speech"],
+            time: "5-7 minutes",
+            focus: "Any topic, feedback skills."
+          }
+        }
+      },
+      "Level 2 - Learning Your Style": {
+        projects: {
+          "Understanding Your Leadership Style": {
+            objectives: ["Identify your leadership style","Present how your style impacts your leadership","Share a personal leadership experience"],
+            time: "5-7 minutes",
+            focus: "Leadership self-awareness, authenticity, personal reflection."
+          },
+          "Active Listening": {
+            objectives: ["Demonstrate active listening skills","Present on the importance of listening","Show empathy and understanding"],
+            time: "5-7 minutes",
+            focus: "Listening skills, empathy, deeper communication."
+          },
+          "Introduction to Toastmasters Mentoring": {
+            objectives: ["Understand the value of mentoring","Share a mentoring experience","Reflect on growth from mentoring"],
+            time: "5-7 minutes",
+            focus: "Mentoring, relationships, personal growth."
+          }
+        }
+      },
+      "Level 3 - Increasing Knowledge": {
+        projects: {
           "Understanding Conflict Resolution": {
-            objectives: ["Identify strategies for managing conflict","Apply conflict resolution techniques","Present a speech about conflict resolution"],
+            objectives: ["Identify strategies for managing conflict","Apply conflict resolution techniques","Present a speech about resolving or managing conflict"],
             time: "5-7 minutes",
             focus: "Conflict resolution strategies, empathy, problem-solving, real-world application."
           }
@@ -411,232 +709,184 @@ const PATHWAYS = {
       },
       "Level 4 - Building Skills": {
         projects: {
-          "Managing a Difficult Audience": {
-            objectives: ["Identify techniques for managing a difficult audience","Practice techniques in a speech","Demonstrate ability to adapt to audience reactions"],
-            time: "12-15 minutes",
-            focus: "Audience management, adaptability, composure under pressure, engagement recovery."
-          },
-          "Create a Podcast": {
-            objectives: ["Research and plan podcast content","Record a podcast episode","Present the podcast concept to the club"],
-            time: "2-3 minutes (intro) + podcast",
-            focus: "Content planning, audio storytelling, clarity of concept."
+          "Leading in Difficult Situations": {
+            objectives: ["Demonstrate leadership in challenging or complex situations","Present strategies for navigating difficulty","Show composure and adaptability under pressure"],
+            time: "5-7 minutes",
+            focus: "Crisis leadership, difficult conversations, composure, strategic decision-making."
           }
         }
       },
       "Level 5 - Demonstrating Expertise": {
         projects: {
-          "Leading in Your Volunteer Organization": {
-            objectives: ["Apply leadership skills in a volunteer setting","Deliver a speech about your volunteer leadership experience","Reflect on leadership growth"],
-            time: "5-7 minutes",
-            focus: "Leadership reflection, community impact, growth narrative."
-          },
           "High Performance Leadership": {
-            objectives: ["Lead a project to completion","Deliver a speech about the project leadership experience","Demonstrate measurable results"],
+            objectives: ["Lead a significant project from planning to completion","Present the project results and leadership lessons learned","Demonstrate measurable outcomes and growth"],
             time: "5-7 minutes",
-            focus: "Project leadership, results demonstration, team coordination, lessons learned."
+            focus: "Project leadership, measurable results, team coordination, lessons learned."
+          },
+          "Reflect on Your Path": {
+            objectives: ["Reflect on your Pathways journey","Share key takeaways and milestones","Inspire others with your growth story"],
+            time: "5-7 minutes",
+            focus: "Personal growth, reflection, inspiring others."
           }
         }
       }
     }
   },
   "Presentation Mastery": {
+    description: "Build skills as an accomplished public speaker. Focus on audience connection, speech writing, and delivery technique.",
     levels: {
       "Level 1 - Mastering Fundamentals": {
         projects: {
           "Ice Breaker": {
-            objectives: ["Write and deliver a speech about any topic to introduce yourself","Begin to discover your speaking style","Share something personal with the audience"],
+            objectives: ["Introduce yourself to the club","Share a personal story","Begin discovering your speaking style"],
             time: "4-6 minutes",
-            focus: "Self-introduction, comfort on stage, basic speech structure."
+            focus: "Self-introduction, personal storytelling, basic speech structure."
+          },
+          "Writing a Speech with Purpose": {
+            objectives: ["Write a speech with a clear purpose","Organize with strong opening, body, conclusion","Connect your topic to the audience"],
+            time: "5-7 minutes",
+            focus: "Speech purpose, organization, audience connection."
+          },
+          "Introduction to Vocal Variety and Body Language": {
+            objectives: ["Use vocal variety to enhance delivery","Use body language to support your message","Demonstrate delivery impact awareness"],
+            time: "5-7 minutes",
+            focus: "Vocal variety, body language, gestures, stage presence."
           },
           "Evaluation and Feedback": {
-            objectives: ["Present a speech on any topic","Receive and apply evaluation feedback"],
+            objectives: ["Present a speech on any topic","Receive and apply evaluation","Evaluate another member's speech"],
             time: "5-7 minutes",
-            focus: "Openness to feedback, any topic."
-          },
-          "Researching and Presenting": {
-            objectives: ["Research a topic and present findings clearly","Organize information logically","Cite credible sources"],
-            time: "5-7 minutes",
-            focus: "Research quality, logical organization, source citation."
+            focus: "Any topic, feedback skills."
           }
         }
       },
       "Level 2 - Learning Your Style": {
         projects: {
           "Understanding Your Communication Style": {
-            objectives: ["Identify your communication style","Present a speech about your style and how it impacts your interactions","Demonstrate awareness of strengths and areas for growth"],
+            objectives: ["Identify your communication style","Present how your style impacts interactions","Demonstrate awareness of strengths and growth areas"],
             time: "5-7 minutes",
-            focus: "Self-awareness, communication style reflection, authenticity."
+            focus: "Communication self-awareness, style reflection, authenticity."
           },
-          "Connect with Your Audience": {
-            objectives: ["Use techniques to connect with the audience","Create an engaging opening and memorable closing","Maintain audience attention throughout"],
+          "Effective Body Language": {
+            objectives: ["Demonstrate effective use of body language in a speech","Use gestures, movement, and facial expressions purposefully","Show awareness of how body language enhances or detracts from a message"],
             time: "5-7 minutes",
-            focus: "Audience engagement, opening hooks, closings, sustained attention."
+            focus: "Body language mastery, purposeful gestures, movement, facial expressions, physical presence."
+          },
+          "Introduction to Toastmasters Mentoring": {
+            objectives: ["Understand the value of mentoring","Share a mentoring experience","Reflect on growth from mentoring"],
+            time: "5-7 minutes",
+            focus: "Mentoring, relationships, personal growth."
           }
         }
       },
       "Level 3 - Increasing Knowledge": {
         projects: {
           "Persuasive Speaking": {
-            objectives: ["Craft and deliver a persuasive speech","Incorporate evidence and emotional appeals","Include a clear call to action"],
+            objectives: ["Craft and deliver a persuasive speech","Use logic, evidence, and emotional appeals effectively","Include a clear and compelling call to action"],
             time: "5-7 minutes",
-            focus: "Persuasion, evidence, emotional appeal, call to action."
-          },
-          "Using Presentation Software": {
-            objectives: ["Develop a speech supported by visual aids or slides","Ensure visuals enhance rather than distract","Integrate visuals seamlessly into delivery"],
-            time: "5-7 minutes",
-            focus: "Visual aid integration, slide design sense, seamless delivery with slides."
+            focus: "Persuasion techniques, logical structure, emotional appeal, evidence quality, call to action."
           }
         }
       },
       "Level 4 - Building Skills": {
         projects: {
-          "Building an Online Presence": {
-            objectives: ["Develop strategies for online presence","Present findings about personal branding","Demonstrate understanding of digital communication"],
-            time: "5-7 minutes",
-            focus: "Digital communication, personal branding, online strategy."
-          },
           "Managing a Difficult Audience": {
-            objectives: ["Demonstrate techniques for managing difficult audiences","Adapt presentation style to audience needs","Maintain composure and engagement"],
+            objectives: ["Demonstrate techniques for managing a difficult audience","Adapt presentation style to audience reactions","Maintain composure and engagement under pressure"],
             time: "12-15 minutes",
-            focus: "Audience management, adaptability, composure."
+            focus: "Audience management, adaptability, composure under pressure, engagement recovery."
           }
         }
       },
       "Level 5 - Demonstrating Expertise": {
         projects: {
-          "Deliver Social Speeches": {
-            objectives: ["Deliver a social speech (toast, eulogy, or tribute)","Use appropriate tone and emotional connection","Demonstrate awareness of occasion and audience"],
-            time: "3-5 minutes",
-            focus: "Emotional tone, occasion awareness, heartfelt delivery."
+          "Prepare to Speak Professionally": {
+            objectives: ["Prepare and deliver a professional-caliber speech","Demonstrate mastery of speech writing and delivery","Show ability to engage and influence a professional audience"],
+            time: "18-22 minutes",
+            focus: "Professional speaking, extended delivery, mastery of technique, audience influence."
           },
-          "High Performance Leadership": {
-            objectives: ["Lead a significant project","Present results and leadership lessons","Demonstrate growth as a speaker and leader"],
+          "Reflect on Your Path": {
+            objectives: ["Reflect on your Pathways journey","Share key takeaways and growth milestones","Inspire others with your story"],
             time: "5-7 minutes",
-            focus: "Leadership, measurable results, growth reflection."
+            focus: "Personal growth, reflection, inspiring others."
           }
         }
       }
     }
   },
-  "Effective Coaching": {
+  "Visionary Communication": {
+    description: "Build skills as a strategic communicator and leader. Focus on sharing information, planning communications, and developing a long-term vision.",
     levels: {
       "Level 1 - Mastering Fundamentals": {
         projects: {
           "Ice Breaker": {
-            objectives: ["Introduce yourself to the club","Discover your speaking style","Share a personal story or experience"],
+            objectives: ["Introduce yourself to the club","Share a personal story","Begin discovering your speaking style"],
             time: "4-6 minutes",
-            focus: "Self-introduction, personal storytelling, finding comfort on stage."
+            focus: "Self-introduction, personal storytelling, basic speech structure."
+          },
+          "Writing a Speech with Purpose": {
+            objectives: ["Write a speech with a clear purpose","Organize with strong structure","Connect your topic to the audience"],
+            time: "5-7 minutes",
+            focus: "Speech purpose, organization, audience connection."
+          },
+          "Introduction to Vocal Variety and Body Language": {
+            objectives: ["Use vocal variety to enhance delivery","Use body language to support your message","Demonstrate delivery awareness"],
+            time: "5-7 minutes",
+            focus: "Vocal variety, body language, gestures, stage presence."
           },
           "Evaluation and Feedback": {
-            objectives: ["Present a speech on any topic","Receive and learn from evaluation"],
+            objectives: ["Present a speech on any topic","Receive and apply evaluation","Evaluate another member's speech"],
             time: "5-7 minutes",
-            focus: "Any topic, learning from feedback."
-          }
-        }
-      },
-      "Level 2 - Learning Your Style": {
-        projects: {
-          "Understanding Your Communication Style": {
-            objectives: ["Identify your communication style and preferences","Present a speech reflecting on your communication approach","Connect style awareness to coaching ability"],
-            time: "5-7 minutes",
-            focus: "Self-awareness, communication reflection, coaching mindset."
-          },
-          "Active Listening": {
-            objectives: ["Demonstrate active listening skills","Present a speech about the importance of listening in coaching","Show empathy and understanding in communication"],
-            time: "5-7 minutes",
-            focus: "Listening skills, empathy, coaching-oriented communication."
-          }
-        }
-      },
-      "Level 3 - Increasing Knowledge": {
-        projects: {
-          "Reaching Consensus": {
-            objectives: ["Facilitate a group discussion to reach consensus","Demonstrate facilitation and coaching techniques","Present on the experience and outcomes"],
-            time: "20-25 minutes (facilitation) + 5-7 minutes (speech)",
-            focus: "Facilitation skills, consensus building, coaching in group settings."
-          },
-          "Successful Collaboration": {
-            objectives: ["Lead a collaborative effort","Present lessons on effective collaboration","Demonstrate coaching in team settings"],
-            time: "5-7 minutes",
-            focus: "Team collaboration, coaching leadership, partnership skills."
-          }
-        }
-      }
-    }
-  },
-  "Innovative Planning": {
-    levels: {
-      "Level 1 - Mastering Fundamentals": {
-        projects: {
-          "Ice Breaker": {
-            objectives: ["Introduce yourself to the club","Share a personal story to connect with the audience","Begin discovering your speaking strengths"],
-            time: "4-6 minutes",
-            focus: "Self-introduction, personal storytelling, first speech encouragement."
-          },
-          "Evaluation and Feedback": {
-            objectives: ["Present a speech on any topic","Practice receiving constructive evaluation"],
-            time: "5-7 minutes",
-            focus: "Any topic, feedback reception."
-          }
-        }
-      },
-      "Level 2 - Learning Your Style": {
-        projects: {
-          "Understanding Your Communication Style": {
-            objectives: ["Identify and reflect on your communication style","Present insights about how your style affects your planning and innovation","Connect communication awareness to innovative thinking"],
-            time: "5-7 minutes",
-            focus: "Communication self-awareness, innovation mindset."
-          },
-          "Connect with Your Audience": {
-            objectives: ["Engage the audience with creative techniques","Build rapport through storytelling or interaction","Create a memorable opening and closing"],
-            time: "5-7 minutes",
-            focus: "Creative engagement, audience rapport, memorable framing."
-          }
-        }
-      },
-      "Level 3 - Increasing Knowledge": {
-        projects: {
-          "Project Management": {
-            objectives: ["Apply project management techniques to a real project","Present the project plan, execution, and outcomes","Demonstrate organized thinking and planning skills"],
-            time: "5-7 minutes",
-            focus: "Project planning, organized presentation, results communication."
-          },
-          "Persuasive Speaking": {
-            objectives: ["Deliver a persuasive speech with clear logic and evidence","Include emotional appeal and a call to action","Connect persuasion to innovative ideas"],
-            time: "5-7 minutes",
-            focus: "Persuasion, innovation framing, evidence-based advocacy."
-          }
-        }
-      }
-    }
-  },
-  "Motivational Strategies": {
-    levels: {
-      "Level 1 - Mastering Fundamentals": {
-        projects: {
-          "Ice Breaker": {
-            objectives: ["Introduce yourself and share what motivates you","Begin discovering your speaking style","Connect with the audience through personal experience"],
-            time: "4-6 minutes",
-            focus: "Self-introduction, motivation theme, personal connection."
-          },
-          "Evaluation and Feedback": {
-            objectives: ["Present a speech on any topic","Learn from evaluation feedback"],
-            time: "5-7 minutes",
-            focus: "Any topic, growth through feedback."
+            focus: "Any topic, feedback skills."
           }
         }
       },
       "Level 2 - Learning Your Style": {
         projects: {
           "Understanding Your Leadership Style": {
-            objectives: ["Reflect on how you motivate and lead others","Present your leadership style with examples","Connect leadership style to motivational impact"],
+            objectives: ["Identify your leadership style","Present how your style impacts your leadership","Share a personal leadership experience"],
             time: "5-7 minutes",
-            focus: "Leadership self-awareness, motivational techniques, authentic examples."
+            focus: "Leadership self-awareness, authenticity, personal reflection."
           },
-          "Active Listening": {
-            objectives: ["Demonstrate active listening as a motivational tool","Present on how listening inspires and motivates others","Show empathy in communication"],
+          "Understanding Your Communication Style": {
+            objectives: ["Identify your communication style","Present how it impacts interactions","Demonstrate awareness of strengths and growth areas"],
             time: "5-7 minutes",
-            focus: "Listening as motivation, empathy, supportive communication."
+            focus: "Communication self-awareness, interpersonal impact."
+          },
+          "Introduction to Toastmasters Mentoring": {
+            objectives: ["Understand the value of mentoring","Share a mentoring experience","Reflect on growth from mentoring"],
+            time: "5-7 minutes",
+            focus: "Mentoring, relationships, personal growth."
+          }
+        }
+      },
+      "Level 3 - Increasing Knowledge": {
+        projects: {
+          "Develop a Communication Plan": {
+            objectives: ["Create and present a communication plan","Demonstrate strategic thinking about audience and messaging","Show ability to organize complex information clearly"],
+            time: "5-7 minutes",
+            focus: "Strategic communication, planning, audience analysis, clear messaging, organized thinking."
+          }
+        }
+      },
+      "Level 4 - Building Skills": {
+        projects: {
+          "Communicate Change": {
+            objectives: ["Demonstrate ability to communicate change effectively","Present strategies for leading others through change","Show empathy and clarity in change communication"],
+            time: "5-7 minutes",
+            focus: "Change communication, empathy, clarity, leading through uncertainty, strategic messaging."
+          }
+        }
+      },
+      "Level 5 - Demonstrating Expertise": {
+        projects: {
+          "Develop Your Vision": {
+            objectives: ["Develop and articulate a long-term personal or professional vision","Present your vision with clarity and passion","Inspire others to understand and support your vision"],
+            time: "5-7 minutes",
+            focus: "Visionary thinking, long-term planning, inspirational delivery, passion, clarity of purpose."
+          },
+          "Reflect on Your Path": {
+            objectives: ["Reflect on your Pathways journey","Share key takeaways and milestones","Inspire others with your growth story"],
+            time: "5-7 minutes",
+            focus: "Personal growth, reflection, inspiring others."
           }
         }
       }
@@ -913,6 +1163,34 @@ function resetApp() {
 }
 
 populatePathways();
+
+// =====================================================
+// PASSWORD GATE
+// Change this password to your club's access code
+// =====================================================
+const CLUB_PASSWORD = 'toastmaster2026';
+
+function checkPassword() {
+  const input = document.getElementById('gateInput');
+  const error = document.getElementById('gateError');
+
+  if (input.value === CLUB_PASSWORD) {
+    document.getElementById('gate').classList.add('hidden');
+    document.querySelector('.app').classList.add('unlocked');
+    sessionStorage.setItem('tm_auth', '1');
+  } else {
+    error.textContent = 'Incorrect access code. Check with your club leader.';
+    input.classList.add('shake');
+    input.value = '';
+    setTimeout(() => input.classList.remove('shake'), 400);
+  }
+}
+
+// Stay unlocked during this browser session (tab refresh)
+if (sessionStorage.getItem('tm_auth') === '1') {
+  document.getElementById('gate').classList.add('hidden');
+  document.querySelector('.app').classList.add('unlocked');
+}
 </script>
 </body>
 </html>
